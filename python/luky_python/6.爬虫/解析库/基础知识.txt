@@ -1,0 +1,400 @@
+urllib是Python中的一个内置package，其由以下四大模块组成:
+
+模块名                    描述
+urllib.request         打开和读取url
+urllib.parse           解析url
+urllib.robotparser     解析robots.txt文件
+urllib.error           包含urllib.request模块抛出的异常
+
+重要函数即描述：
+
+1. urllib.request.urlopen(url, data=None, [timeout, ]*, cafile=None, capath=None, context=None)
+"""
+url      http url,可为字符串或request对象(urllib.request.Request)
+
+data     发送额外的数据给http服务器，须为bytes类型，默认为None。
+
+timeout    可选的请求超时参数，没有传递时会使用一个默认的超时时间，仅用于http,https,ftp连接
+
+context     ssl.SSLContext实例，用来定义SSL的传输选项，默认为None
+
+cafile,capath    cafile指向一个PEM格式的CA证书文件，capath则指向一个包含一系列PEM格式的CA证书文件的目录
+"""
+
+2. 使用Request类可以对http请求进行更细粒度的控制，比如请求头，请求方法。
+urllib.request.Request(url,data=None,headers={},origin_req_host=None, unverifiable=False, method=None)
+"""
+url        有效的url字符串
+
+data       发送额外的数据给http服务器，须为bytes类型，默认为None。
+
+headers    字典类型，用来定义HTTP请求头
+
+origin_req_host    定义源服务器的主机名或ip地址
+
+unverifiable       用来指定用户的请求是否无法验证，默认为False
+
+method      用来指定HTTP的请求方法,字符串类型，例如:HEAD,GET,POST
+"""
+urllib.request.Request对象常用方法：
+get_method  返回Request对象的http请求方法
+add_header  添加http请求头
+has_header  判断Request对象是否包含某请求头
+
+
+3.  urllib.request.build_opener该函数用来构建一个OpenerDirector对象：build_opener([handler, ...])
+OpenerDirector对象会链式地按序处理在build_opener方法中传递的处理器，处理器需为BaseHandler，或其子类。
+
+OpenerDirector对象常用方法：
+add_handler(self,handler)          添加URL处理器
+open(self, fullurl, data=None)     打开完整的url
+
+
+Python所提供的常用url处理器：
+处理器                       描述
+HTTPRedirectHandler         用于发起重定向请求
+HTTPCookieProcessor         用于处理HTTP Cookies
+ProxyHandler                用于发起代理请求
+HTTPPasswordMgr             保存用户的账号和密码，以发起需授权验证的请求
+HTTPBasicAuthHandler        用于web客户端授权验证
+HTTPSHandler                用于发起https请求
+
+
+4. url解析:urllib.parse
+使用urlparse函数可以方便地解析出url中的协议类型，主机名，端口号，请求路径等信息:
+urllib.parse.urlparse(urlstring, scheme='', allow_fragments=True)
+
+urlstring          待解析的url字符串
+scheme             指定解析的url地址的scheme,仅当url中没有scheme时才需传递
+allow_fragments    默认为True, 会解析url中的分片标识。为False时，url中的分片标识不会被解析。
+
+函数返回一个包含6个元素的命名元组，各元素可通过索引或属性名进行访问。命名元组的属性名如下表所示：
+
+属性名                   描述
+scheme                  url地址的scheme
+netloc                  url的网络位置，比如常见的域名:端口号
+path                    url中的请求路径
+params                  url中请求路径后的参数
+query                   url中的查询参数
+fragment                url中的锚定位，即HTML中的分片标识
+
+通过命名元组的query属性可以返回查询参数，如需对查询参数进一步解析，可以使用urllib.parse.parse_qs方法：
+
+
+5. urllib.parse.urlencode()
+urlencode函数用来将映射类型或二维的元组类型转换为通过'&'分隔的url编码：
+urllib.parse.urlencode(query, doseq=False, safe='',encoding=None,errors=None,quote_via=quote_plus)
+
+属性名             描述
+query             表示映射类型(例如字典)或二维的元组对象
+doseq             默认为False,为True时表示二维元组中的每一个元素(元组)中的第二个元素为一个序列，例如(('language',('c++','python')))
+safe              传递给quote_via所指定的url编码函数，用来指定某字符不需要编码
+encoding          传递给quote_via所指定的url编码函数,用来指定字符编码
+errors            传递给quote_via所指定的url编码函数，用来指定发生编码错误时该如何处理
+quote_via         默认为quote_plus函数，用来生成url编码，quote_plus函数会将空白字符编码为+号，将/编码为%2F
+
+6. url异常:urllib.error
+urllib.error 模块为urllib.request所引发的异常定义了如下异常类:
+异常类             描述
+URLError          urllib.error中的异常类的基类，属性reason描述了异常原因
+HTTPError         code属性表示HTTP状态码，reason属性表示引起异常的原因
+ContentTooShortError   此异常会在 urlretrieve()函数检测到已下载的数据量小于期待的数据量（由 Content-Length请求头指定的长度）时被引发
+
+7. 快速发起HTTP请求:requests模块提供了与HTTP动词同名的方法，以快速发起HTTP请求:
+
+请求方法                                                  描述
+requests.get(url,params=None, **kwargs)                  HTTP协议中的GET请求
+requests.post(url, data=None, json=None, **kwargs)       HTTP协议中的POST请求
+requests.put(url, data=None, **kwargs)                   HTTP协议中的PUT请求
+requests.head(url, **kwargs)                             HTTP协议中的HEAD请求
+requests.options(url, **kwargs)                          HTTP协议中的OPTIONS请求
+
+方法中的第一个参数都为url, 表示请求的资源地址。get方法中的params参数用来传递url参数，post方法中的data以及json用来传递提交给服务端的数据。
+put方法，head方法，options方法中的参数使用方法与get, post是一样的，不再赘述。各请求方法的返回值是一个Response对象.
+下表为Response对象常用的属性和方法：
+常用属性和方法         描述
+url                  请求的url
+text                 从服务端响应的文本数据
+content              从服务端响应的字节流数据
+json()               调用该方法将响应的json数据反序列化
+status_code          服务端的响应状态码
+reason               与响应状态码对应的描述信息
+cookies              服务端响应的cookie信息，系RequestsCookieJar对象
+headers              服务端的响应头信息，字典类型
+
+
+8. 获取与发送cookies
+服务端的响应中如果包含cookie信息，可通过Response对象的cookies进行访问。
+在爬虫程序的开发场景中，很多情况下需要发送cookie给服务端，以维持状态信息，
+此时可以通过RequestsCookieJar对象的set方法构造一个cookie:
+set(self, name, value, **kwargs)
+name表示字段名，value表示字段值，可以在关键字参数中使用domain来传递请求的域名，
+用path参数来指定请求的路径。
+
+
+9. requests进阶用法
+(1) 保持cookie:通过requests中的Session对象，可以在同一个会话的所有请求间保持cookie。
+    构造Session对象时，通常使用with来进行上下文管理，并通过Session对象的get或post方法来发起请求。
+    requests中的会话无法保持请求级别的参数，即后面的请求方法不能保持前面请求方法中的参数.
+
+(2) PreparedRequest对象
+    在调用requests的get方法或post等方法时，requests在内部实现中会先构造一个Request对象，
+    然后再通过Request的prepare方法构造一个PreparedRequest对象。
+    直接构造PreparedRequest对象，以便在下文代码中对对象进行复用。
+    其不足在于直接通过Request.prepare方法构造的是一个无状态的PreparedRequest对象，不会在会话中保持cookie。
+    如需构造带状态的PreparedRequest，应当使用Session对象的prepare_request方法
+
+(3) 证书验证
+    在默认情况下，requests中的请求方法会开启SSL验证。通过请求方法中的关键字参数verify可以对SSL证书验证进行控制.
+    verify参数值             描述
+    True                    默认值，表示对SSL证书进行验证
+    False                   忽略对SSL证书的验证
+    path_to_certfile        指向CA证书的目录，该文件夹必须通过 OpenSSL 提供的 c_rehash工具处理
+
+(4)使用代理
+    我们在开发爬虫程序的时候，通常需要设置代理服务器，以隐藏IP地址 。通过关键字参数proxies可以设置代理服务器
+
+
+9. 正则表达式(regular expression)
+正则表达式也是一个字符串，在正则表达式中可以包含其它的普通字符。我们学习正则表达式，主要是学习正则表达式中的
+模式字符和限定符。然后根据正则表达式中的语法规则，将普通字符，模式字符，限定符组合成一个高效的正则表达式。
+\w     匹配字母，数字，下划线
+\W     匹配出\w以外的任意字符
+\s     匹配空白字符。计算机中的空白字符：\t,\n,\r,\f
+\S     匹配除了\s以外的任意字符，即非空字符
+\A     匹配字符串开头
+\z     匹配字符串结尾，会匹配到行尾的换行符
+\Z     匹配字符串结尾，不会匹配到行尾的换行符
+\d     匹配任意数字字符：1-9
+\D     匹配出\d意外的任意字符
+^      匹配一行字符串的开头
+$      匹配一行字符串的结尾
+.      匹配出换行符以外的任意字符
+[]     匹配[]内的任意一个字符，表示某一个范围可使用-进行连接，比如[a-z]，表示匹配a到z之间的任意字符
+[^]    匹配除了[]以外的任意字符
+|      左右两边表达式是“或”关系，表示匹配左边或者右边
+
+()     表示将括号内的字符作为一个整体进行匹配
+       取匹配结果的时候，括号中的表达式作为一个整体被获取
+
+限定字符用来限定匹配的次数，下表为正则表达式中常用的限定符:
+？         匹配表达式0次或1次
++          匹配表达式1次以上
+*          匹配表达式0次或1次以上
+{n}        重复匹配表达式n次
+{m, n}     至少匹配m次，最多匹配n次
+{m,}       至少匹配m次
+
+贪婪匹配与非贪婪匹配
+使用限定字符限定匹配次数时，在默认情况下会进行贪婪匹配。所谓贪婪匹配，是指尽可能进行多的匹配。
+在限定符后面加上一个？,可将贪婪匹配改为非贪婪匹配。在非贪婪匹配中，会尽可能少的匹配。
+
+正则表达式中的零宽断言
+?=exp         正预测先行断言，目标字符串后面必需匹配表达式exp
+?!exp         负预测先行断言，!即非，表示目标字符串后面不能出现表达式exp
+?<=exp        正回顾后发断言，目标字符串前面必需匹配表达式exp
+?<!exp        负回顾后发断言，表示目标字符串前面不能出现表达式exp
+
+Python中的正则表达式模块
+Python提供了内置模块re来处理正则表达式，下表为re模块中的常用方法：
+常用方法                               描述
+match(pattern,string,flags=0)         从字符串起始位置开始匹配，通过返回值的group方法来获取匹配的结果。
+search(pattern, string, flags=0)      扫描整个字符串，返回第一次匹配的结果
+findall(pattern, string,flags=0)      扫描整个字符串，返回所有匹配的结果
+sub(pattern, repl, string, flags=0)     将string中的repl子串使用pattern进行替换
+compile(pattern, flags=0)             将模式字符串编译成可复用的正则表达式对象
+
+flags参数用来对模式匹配进行修饰，flags参数的常用取值如下表所示：
+flags参数         描述
+re.I          I是英文单词ignore的首字母，表示在匹配过程中不区分大小写
+re.M          M是英文单词multilines的首字母，表示多行匹配
+re.S          对于模式字符.会匹配包含换行符的任意字符
+re.U          U是unicode的首字母，表示根据unicode编码来解析字符
+
+
+10. XPath语法
+XPath中常用的路径表达式符号:
+特殊符号              描述
+/              表示从根节点位置进行定位，例如/html，表示定位根节点html
+//             以匹配的当前节点作为起始节点，例如//div,表示定位文档中的所有div节点
+.              匹配当前节点
+..             匹配父节点
+@              属性选择器，匹配包含某属性的节点，例如//a[@href='www.chipscoco.com']，
+               表示定位文档中所有href属性为www.chipscoco.com的a节点
+*              通配符，用来匹配任何节点，例如//div/*,用来定位div节点下的所有节点
+|              连接符，用来连接路径表达式，例如//h1 | //p，用来定位所有h1节点以及所有p节点
+and,or         逻辑运算符，用来进行逻辑判断。例如a[@href='www.chipscoco.com' and @class='nav'],
+               用来定位文档中所有href属性为www.chipscoco.com且class属性为nav的a节点
+
+当需要对定位的节点进行更细粒度的筛选时，可以使用XPath中的谓语。谓语被定义在[]中，[]中可以输入位置索引，
+表示定位某一个具体位置的元素，例如//div/img[1],表示选择所有div节点下的第一个img节点。以下是常用的谓语:
+谓语            描述
+[位置索引]       位置索引从0开始编号，表示第一个元素，例如//div/p[0],表示选择所有div节点下的第一个p节点。
+                也可以使用内置方法来获得指定位置的节点，比如last()用来获取最后一个元素，last()-1表示倒数第二个，
+                以此类推。position方法则用来指定某一段范围，常与关系运算符结合使用，例如//div/p[position() < 2],
+                用来选择所有div节点下的前2个p节点。
+[属性选择]       即在[]中使用属性选择器，例如//div/a[href]表示选择div节点下的包含href属性的所有a节点。
+                //div/a[href='www.chipscoco.com']，表示选择文档中div节点下的href属性值为www.chipscoco.com的所有a节点。
+[模糊匹配]       使用contains，starswith等方法来进行模糊查找。contains表示选择属性包含某内容的节点，
+                starswith则表示选择属性中以某关键字作为前缀的节点。例如//input[contains(@name,'se')],
+                表示选择所有name属性中包含se的input节点。
+
+11. BeautifulSoup:   from bs4 import BeautifulSoup
+BeautifulSoup的构造函数，需重点掌握markup参数以及features参数。markup参数用来指定标记语言文本，
+例如xml,html。features参数用来指定文档解析器。BeautifulSoup常用的文档解析器如下表所示：
+文档解析器              构造方法
+html.parser          BeautifulSoup(markup,features="html.parser")
+lxml                 BeautifulSoup(markup,features="lxml")
+lxml-xml             BeautifulSoup(markup,features="lxml-xml")
+                     BeautifulSoup(markup,features="xml")
+html5lib             BeautifulSoup(markup,features="html5lib")
+在这些解析器中，html.parser是Python自带的解析器，无需额外安装，lxml与html5lib都需要额外安装。
+在解析速度方面，lxml最优，html.parser与html5lib次之。在网页解析的容错性方面，html5lib最优，lxml,html.parser次之。
+
+BeautifulSoup的四类对象:
+BeautifulSoup将HTML文档转换成复杂的树形结构，树结构中的每个节点都是一个Python对象，
+所有对象可以归纳为4种: Tag , NavigableString , BeautifulSoup , Comment。
+(1) BeautifulSoup对象
+通过BeautifulSoup构造的即是一个BeautifulSoup对象，其表示整个HTML或XML文档。
+
+(2) tag对象
+所谓tag对象，对应的是HTML或XML文档中的标签，比如h1标签，img标签，a标签等。构造好BeautifulSoup对象以后，
+直接通过成员操作符来访问tag对象。对于tag对象，可通过name属性来获取标签名，通过attrs属性来获取文档标签中的属性
+
+(3) NavigableString对象
+tag对象的string属性即为NavigableString对象,如需以字符串对象的方式来对NavigableString对象进行处理，
+可通过unicode()方法将其转换为unicode字符串。
+
+(4) Comment对象
+Comment对象是一种特殊的NavigableString对象，当注释内容被包含于tag中时，通过string属性得到的即为Comment对象
+
+BeautifulSoup的节点遍历
+(1) 遍历子节点
+通过tag对象的contents属性，可将当前节点的所有子节点以列表的形式输出。读者需注意的是，contents列表中的元素为tag对象。
+通过tag对象的children属性遍历当前节点的所有子节点，children为迭代器对象，可在循环中进行遍历。
+
+(2) 遍历父节点
+通过parent或parents属性遍历当前节点的父节点，前者指向当前节点的父节点，后者为一个生成器，
+可在循环中递归获取当前节点的所有父节点。
+
+(3) 遍历兄弟节点
+通过next_sibling或previous_sibling遍历当前节点的兄弟节点，前者表示后继，后者表示前驱。如需遍历所有前驱或所有后继，
+则通过next_siblings或previous_siblings进行遍历。
+
+BeautifulSoup官方文档4.4.0地址:https://beautifulsoup.readthedocs.io/zh_CN/v4.4.0/
+
+① find(name=None, attrs={}, recursive=True, text=None, **kwargs)
+参数              描述
+name            表示查找的标签名
+attrs           表示标签中的属性值对
+recursive       表示是否进行递归搜索
+text            表示标签所对应的文本
+kwargs          表示可变参数，例如可以通过关键字id和class_来查找指定id，class的标签
+返回值    查找到的第一个tag对象
+
+② find_all(name=None, attrs={}, recursive=True, text=None, limit=None,  **kwargs)
+"""
+参数同find方法，limit参数表示限定获取的标签数。
+"""
+"""
+返回值：find_all方法的返回值列表对象，列表中包含查找到的所有标签
+"""
+③ select(selector, namespaces=None, limit=None, **kwargs)
+参数           描述
+selector      表示css选择器
+namespaces    用来传递一个字典类型的命名空间对象，通常使用其默认值
+limit         表示限定获取的标签数
+kwargs        表示可变参数，具体的关键字参数可查阅官方文档
+返回值:返回值为列表对象，列表中包含查找到的所有标签
+
+12. 前端常用加密算法:Base64, MD5, SHA, HMAC, AES, RSA
+(1)使用Base64编码的作用在于减弱数据的可读性,增加破解难度。Python提供了内置模块base64,用来对字节进行base64编码。
+base64模块的常用方法：
+方法               描述
+b64encode(s)      s表示字节类型的对象，返回经过base64编码后的字节对象
+b64decode(s)      将经过base64编码后的s解码为编码前的对象
+urlsafe_b64encode(s)    s参数同b64encode, 该方法用来解决参数的URL编码问题
+urlsafe_b64decode(s)    将经过base64编码后的s解码为编码前的对象
+
+(2)消息摘要算法:MD5
+MD5是一种不可逆的散列生成算法，不论输入的长度为多少，输出的都为一个128位(16字节)的散列值。相同的输入得到的是相同的MD5值，
+利用MD5这样的特性，可校验数据的一致性。MD5很典型的一种应用场景是验证用户登录密码是否正确。
+后端在用户认证过程中，先将客户端传递过来的用户密码生成一个MD5值，然后与数据库保存的MD5值进行比较，如果相等则用户密码输入正确。
+
+在Python中可直接使用内置模块hashlib中的md5方法来生成散列值。
+hashlib模块的md5方法：
+方法                描述
+md5(string=b'')    string参数用来传递字节类型的数据，返回一个md5的散列对象；
+                   可执行md5散列对象的digest方法获取二进制散列，执行hexdigest方法获取十六进制散列。
+
+(3)安全散列算法:SHA
+SHA的英文全称为Secure Hash Algorithm，是一个密码散列函数家族。SHA包含的散列算法主要有sha1,sha256等，其安全性高于MD5, 通常用来生成数字签名。
+所谓的数字签名，是指由数据发送方才能生成，并且无法伪造的散列值。在Python中通过hashlib模块的sha函数簇来生成散列值，
+下表所示为常用的SHA算法:
+方法                   描述
+sha1(string=b'')      string参数用来传递字节类型的数据，返回一个sha1散列对象；
+                      可执行散列对象的digest方法获取二进制散列，执行hexdigest方法获取十六进制散列。
+sha256(string=b'')    string参数用来传递字节类型的数据，返回一个sha256散列对象；
+                      可执行散列对象的digest方法获取二进制散列，执行hexdigest方法获取十六进制散列。
+
+(4)基于散列的消息认证码:HMAC
+HMAC是基于散列函数和密钥来进行消息认证的一种机制。通过散列函数可以验证消息的完整性，而通过密钥来确认接收的消息是否为对方所发。
+在Python中可通过内置的hmac模块来生成基于散列的消息认证码。hmac模块的常用方法：
+方法                                 描述
+new(key, msg=None, digestmod='')    该方法返回一个hmac对象，key表示字节类型的密钥，msg表示待生成摘要的消息。
+                                    digestmod表示散列算法的名称，常用的参数有MD5,SHA1,SHA256。
+
+hmac对象的常用方法：
+方法               描述
+update(msg)       该方法表示用msg来更新hmac对象，msg表示待生成摘要的消息。重复调用时表示与上次的结果进行拼接。
+                  例如m.update(a),m.update(b)等价于m.update(a+b)
+hexdigest()       输出十六进制的消息摘要。digest方法是生成二进制的消息摘要。
+
+
+13.Selenium简介
+Selenium是一个web自动化测试工具，其底层使用JavaScript来对用户的操作进行模拟。我们在编写爬虫程序时，
+只需调用Selenium提供的方法，就可以驱动浏览器，模拟出用户的真实行为，再通过浏览器对象直接获取页面的数据。
+Selenium快速入门:
+(1) 构造浏览器对象
+通过selenium.webdriver中的Chrome,Firefox构造谷歌,火狐浏览器对象
+(2) 访问网页，获取源码
+通过浏览器对象的get方法来发起请求，请求成功以后再通过浏览器对象的page_source属性来获取网页源码
+(3) 模拟用户行为
+通过selenium驱动浏览器并打开指定的网页以后，该如何模拟用户的行为？以百度搜索为例，打开网页以后，需要先定位到网页中的标签对象，
+再通过标签对象的send_keys方法来模拟输入， 通过click方法来模拟用户点击。
+selenium提供了多种定位方法，在本节教程中主要讲解以下三种常用的定位方法：
+常用定位方法                       描述
+find_element_by_id(id_)          根据HTML标签对象的id进行定位
+find_element_by_class_name(name) 根据HTML标签对象的class进行定位
+find_element_by_name(name)       根据HTML标签对象的属性名进行定位
+
+通过标签对象来模拟用户在浏览器操作的常用方法：
+常用浏览器操作           描述
+send_keys(value)       模拟用户的输入
+clear()                清空用户的输入
+click()                模拟用户的点击
+submit()               模拟用户提交表单
+
+Selenium进阶用法
+(1) 等待事件
+当定位的元素未被载入至页面中时，在程序中对该元素进行操作会抛出
+ElementNotVisibleException异常。此时可通过selenium提供的等待事件，仅当页面中存在此元素时才继续进行操作。
+selenium提供了两类等待事件，一类是隐式等待：
+隐式等待                        描述
+implicitly_wait(seconds)    等待指定的秒数，直到页面元素可用或超时。
+一类是显式等待:通过selenium的WebDriverWait与ExpectedCondition进行实现。
+WebDriverWait用来指定等待的时间，ExpectedCondition则用来指定等待的预期条件。
+
+(2) 鼠标操作
+通过selenium，也可以模拟鼠标的移动，点击，拖拽等操作。模拟鼠标操作需要先构造ActionChains对象
+模拟鼠标操作的常用方法：
+常用鼠标操作                        描述
+move_to_element(to_element)       鼠标移动至to_element指向的元素
+move_by_offset(xoffset, yoffset)  将鼠标从xoffset位置移动到yoffset位置
+click(on_element=None)            点击on_element所指向的页面元素
+click_and_hold(on_element=None)   鼠标左击on_element元素，并一直保持
+drag_and_drop(source, target)     鼠标左击source元素，并移动至target元素
+通过ActionChains模拟鼠标的一系列操作，最终还需执行ActionChains提供的perform方法来执行行为链。
+
+
+

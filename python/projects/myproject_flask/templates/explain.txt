@@ -1,0 +1,36 @@
+这是模板文件，所有响应的数据都从html文件中读取
+
+# linux和mac
+$ . venv/bin/activate
+# windows激活
+> venv\Scripts\activate
+deactivate
+
+Jinja2 中的 extends 指令从 Flask-Bootstrap 中导入 bootstrap/base.html，从而实现模板继
+承。Flask-Bootstrap 中的基模板提供了一个网页框架，引入了 Bootstrap 中的所有 CSS 和JavaScript 文件。
+基模板中定义了可在衍生模板中重定义的块。block 和 endblock 指令定义的块中的内容可
+添加到基模板中。
+这个 user.html 模板定义了 3 个块，分别名为 title、navbar 和 content。这些块都是
+基模板提供的，可在衍生模板中重新定义。title 块的作用很明显，其中的内容会出现在
+渲染后的 HTML 文档头部，放在 <title> 标签中。navbar 和 content 这两个块分别表示页
+面中的导航条和主体内容。
+在这个模板中，navbar 块使用 Bootstrap 组件定义了一个简单的导航条。content 块中有个
+<div> 容器，其中包含一个页面头部。之前版本的模板中的欢迎信息，现在就放在这个页面头部
+
+Flask-Bootstrap基模板中定义的块
+块　　名           说　　明
+doc               整个 HTML 文档
+html_attribs      <html> 标签的属性
+html              <html> 标签中的内容
+head              <head> 标签中的内容
+title             <title> 标签中的内容
+metas             一组 <meta> 标签
+styles            层叠样式表定义
+body_attribs      <body> 标签的属性
+body              <body> 标签中的内容
+navbar            用户定义的导航条
+content           用户定义的页面内容
+scripts           文档底部的 JavaScript 声明
+上表中的很多块都是 Flask-Bootstrap 自用的，如果直接重定义可能会导致一些问题。例
+如，Bootstrap 所需的文件在 styles 和 scripts 块中声明。如果程序需要向已经有内容的块
+中添加新内容，必须使用 Jinja2 提供的 super() 函数。
